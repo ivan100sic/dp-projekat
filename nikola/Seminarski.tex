@@ -1,0 +1,478 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[british]{babel}
+\usepackage[]{verbatim}
+\usepackage{graphics}
+\usepackage{latexsym}
+\usepackage{amssymb}
+
+\newcommand{\razmak}{\vspace{0.2cm}}
+
+\title{\Huge \bf Tra\v zenje uzorka u tekstu}
+
+\newtheorem{dfn}{Definicija}[section]
+\newtheorem{thm}[dfn]{Teorema}
+\newtheorem{lm}[dfn]{Lema}
+\newtheorem{pos}[dfn]{Posledica}
+\newtheorem{prim}{Primer}
+
+\begin{document}
+
+\renewcommand{\abstractname}{Apstrakt}
+\renewcommand{\refname}{Literatura}
+\renewcommand{\contentsname}{Sadr\v zaj}
+
+\begin{titlepage}
+\begin{center}
+{\large Prirodno Matemati\v cki Fakultet u Ni\v su}
+\end{center}
+\vspace{7cm}
+\begin{center}
+{\Huge \textbf{Tra\v zenje uzorka u tekstu}}
+\end{center}
+\vspace{2cm}
+\large \textbf{Student:} \hspace{9.1 cm} \textbf{Profesor:} \\
+\large Nikola Milosavljevi\' c \hspace{4.6 cm} Predrag Stanimirovi\' c \vspace{6.5cm}
+\begin{center}{Ni\v s\\
+Februar, 2009.}\end{center}
+\end{titlepage}
+
+\thispagestyle{headings}
+
+\tableofcontents
+
+\newpage
+
+\pagestyle{headings}
+
+\section{Uvod}
+
+\v Cest je slu\v caj da je za neki element potrebno ispitati da li pirpada datom skupu. Algoritam pomo\' cu kojeg \' ce se to odrediti, kao i njegova efikasnost, zavisi od osobina samog elementa kao i od strukture datog skupa. Karakteristi\v can je slu\v caj kada se radi o {\it stringovima}, pri \v cemu problem postaje pronala\v zenje neke specificirane re\v ci ili uzorka u datom tekstu.
+
+Mnogi editori danas raspola\v zu nizom funkcija za manipulaciju teksta. Jedna od karakteristi\v cnih funkcija je {\it search} koja slu\v zi da se prona\dj e specificirani uzorak (naj\v ce\v s\' ce jedna re\v c) u nekom dokumentu. Ovi objekti mogu biti prili\v cno veliki (u ve\' cim dokumentima, broj slova je \v cesto reda veli\v cine $10^6$) pa efikasni algoritmi imaju veliku ulogu u njihovoj manipulaciji. Za velike dokumente, uglavnom je neprihvatljiva funkcija pretra\v zivanja \v cija je slo\v zenost ve\' ca od linearne.
+\\
+
+Problem nala\v zenja uzorka u tekstu ima primenu i u drugim oblastima, na primer u molekularnoj biologiji kada je potrebno izdvojiti neke uzorke u okviru velikih molekula DNK ili RNK, ili kada je, na primer, potrebno prona\' ci odre\dj eni podniz u nekom velikom nizu brojeva (npr. me\dj u ciframa iracionalnog broja). Tako\dj e, problem se mo\v ze pro\v siriti i u $2D$ kada je potrebno obra\dj ivati slike.
+\\
+
+1970. godine Kuk (S. A. Cook) je teoretski dokazao da postoji apstraktna ma\v sina koja pronalazi uzorak du\v zine $M$ u tekstu du\v zine $N$ u slo\v zenosti $O(N + M)$. Knut (D. E. Knuth) i Prat (V. R. Pratt) su na osnovu ideja Kukovog dokaza uspeli da prona\dj u prakti\v can algoritam sa datom slo\v zeno\v s\' cu. Istovremeno, ali nezavisno od njih, Moris (J. H. Morris) je otkrio isti algoritam na druga\v ciji na\v cin. Knut, Moris i Prat nisu objavili svoj algoritam do 1976. a u me\dj uvremenu su Bojer (R. S. Boyer) i Mur (J. S. Moore) otkrili algoritam iste slo\v zenosti ali koji se pokazivao ne\v sto br\v zi u praksi. 1980. Karp (R. M. Karp) i Rabin (M. O. Rabin) su izmislili algoritam \v cije je prose\v cna slo\v zenost linearna, ali koristi znatno duga\v cije ideje.
+
+\section{Osnovni pojmovi i definicije}
+
+\subsection{String}
+
+Neka je $\bf \Sigma$ neprazan skup, koji nazivamo {\bf alfabetom}, a njegove elemente {\bf simbolima (slovima)}.
+
+\begin{dfn}
+
+{\bf Re\v c (string)} nad alfabetom $\bf \Sigma$ je kona\v can niz $$x_1x_2 \cdots x_n$$ gde je $n \in \mathbb{N}$ i $x_i \in \bf \Sigma$ za svako $i \in \{ 1, 2, \ldots, n \}$.
+
+\end{dfn}
+
+\begin{dfn}
+
+Du\v zina stringa $x$, u oznaci $|x|$, je broj simbola u njegovom zapisu.
+
+\end{dfn}
+
+\begin{dfn}
+
+Dva stringa $u = x_1x_2 \cdots x_n$ i $v = y_1y_2 \cdots y_m$ su jednaka akko je $n = m$ i $x_i = y_i$, za svako $i \in \{ 1, 2, \ldots, n \}$.
+
+\end{dfn}
+
+Skup svih stringova nad alfabetom $\bf \Sigma$ ozna\v cavamo sa $\bf \Sigma^+$.
+
+\begin{dfn}
+
+Konkatenacija (spajanje) je funkcija $f : {\bf \Sigma^+} \times {\bf \Sigma^+} \rightarrow {\bf \Sigma^+}$ tako da za svaka dva stringa $u = x_1x_2 \cdots x_n$ i $v = y_1y_2 \cdots y_m$ iz $\bf \Sigma^+$ va\v zi $$ f(u, v) = x_1x_2 \cdots x_ny_1y_2 \cdots y_m$$ Umesto $f(x, y)$ \v ce\v s\' ce se pi\v se $xy$.
+
+\end{dfn}
+
+\begin{dfn}
+
+Neka je $\varepsilon$ element takav da $\varepsilon \notin {\bf \Sigma^+}$, koji nazivamo {\bf prazan string}. Tada pi\v semo ${\bf \Sigma^\ast} = {\bf \Sigma^+} \cup \{ \varepsilon \}$ i dodefini\v semo operaciju spajanja sa $u\varepsilon = u$ i $\varepsilon u = u$ za svako $u \in {\bf \Sigma^\ast}$. Uzima se da je $|\varepsilon| = 0$.
+
+\end{dfn}
+
+\subsection{Slo\v zenost algoritma}
+
+Za domen svake od funkcija iz definicija se podrazumeva skup $\mathbb{N}_0 = \{0, 1, 2, \ldots\}$.
+
+\begin{dfn}
+
+Za datu funkciju $g(n)$, $O(g(n))$ (veliko "O" od $g(n)$) predstavlja skup funkcija $f(n)$ za koje postoje pozitivne konstante $c$ i $n_0$ tako da va\v zi $0 \leq f(n) \leq cg(n)$, za sve $n \geq n_0$.
+
+\end{dfn}
+
+$O$-notaciju koristimo kada \v zelimo da odredimo {\bf gornju granicu} neke funkcije $f$ do na konstantu.
+
+\begin{dfn}
+
+Za datu funkciju $g(n)$, $\Omega(g(n))$ (veliko Omega od $g(n)$) predstavlja skup funkcija $f(n)$ za koje postoje pozitivne konstante $c$ i $n_0$ tako da va\v zi $0 \leq cg(n) \leq f(n)$, za sve $n \geq n_0$.
+
+\end{dfn}
+
+$\Omega$-notaciju koristimo kada \v zelimo da odredimo {\bf donju granicu} neke funkcije $f$ do na konstantu.
+
+\begin{dfn}
+
+Za datu funkciju $g(n)$, $\Theta(g(n))$ (Teta od $g(n)$) predstavlja skup funkcija $f(n)$ za koje postoje pozitivne konstante $c_1$, $c_2$ i $n_0$ tako da va\v zi $0 \leq c_1g(n) \leq f(n) \leq c_2g(n)$, za sve $n \geq n_0$.
+
+\end{dfn}
+
+$\Theta$-notacija najbolje odre\dj uje funkciju, jer va\v zi $f(n) \in \Theta(g(n)) \Leftrightarrow f(n) \in O(g(n)) \wedge f(n) \in \Omega(g(n))$.
+\\
+
+Umesto izraza $f(n) \in \Theta(g(n))$ (analogno za $O$ i $\Omega$) koristi se izraz $f(n) = \Theta(g(n))$ koji ima svoje prednosti.
+
+\section{Tekst i uzorak}
+
+\subsection{Formalizacija}
+
+Da bismo efektivno opisali algoritme za nala\v zenje uzorka u tekstu, moramo formalizovati problem.
+\\
+
+Pretpostavimo da je tekst niz $T[1..n]$ du\v zine $n$ i da je uzorak niz $P[1..m]$ du\v zine $m \leq n$. Dalje pretpostavimo da su elementi nizova $P$ i $T$ simboli iz kona\v cnog alfabeta $\Sigma$. Na primer, mo\v zemo imati $\Sigma = \{ 0, 1 \}$ ili $\Sigma = \{ a, b, \ldots, z \}$. Primetimo da ovako definisani, $P$ i $T$ predstavljaju stringove.
+\\
+
+Ka\v zemo da se uzorak $P$ {\bf pojavljuje sa pomerajem (eng. shift) $s$} u tekstu $T$ (ekvivalentno, uzorak $P$ {\bf se pojavljuje po\v cev\v si od pozicije $s$+1} u tekstu $T$) ako je $0 \leq s \leq n - m$ i $T[s+1..s+m] = P[1..m]$ (tj. $T[s + i] = P[i]$ za $1 \leq i \leq m$). Ako se $P$ pojavljuje sa pomerajem $s$ u $T$ tada za $s$ ka\v zemo da je {\bf korektan pomeraj}; ina\v ce, ka\v zemo da je $s$ {\bf nekorektan pomeraj}. Problem upore\dj ivanja stringova je problem nala\v zenja svih korektnih pomeraja $s$ sa kojima se dati uzorak $P$ pojavljuje u datom tekstu $T$.
+
+
+\begin{center}
+Slika 1: Pomeraj $s = 3$ je korektan za $T$ = abcabaabcabac i $P$ = abaa.
+\end{center}
+
+Osim naivnog Brute-Force algoritma, mnogi algoritmi za ovu klasu problema prvo obavljaju neko izra\v cunavanje na osnovu uzorka, a zatim tra\v ze sve korektne pomeraje. Prvu fazu \' cemo zvati "preprocesiranje" a drugu "upore\dj ivanje". Tabela 1 pokazuje preprocesiraju\' ce i upore\dj ivaju\' ce vreme poznatijih algoritma za pronala\v zenje uzorka u tekstu.
+
+\begin{center}
+\begin{displaymath}
+% use packages: array
+\begin{array}{lcc}
+\hline Algoritam & Preprocesiranje & Upore\dj ivanje \\
+\hline & & \\
+\textbf{Naivni} & 0 & O((n-m+1)m) \\
+& & \\
+\textbf{Rabin-Karp} & \Theta(m) & O((n-m+1)m)  \\
+& & \\
+\textbf{Kona\v cni automat} & O(m|\Sigma|) & \Theta(n) \\
+& & \\
+\textbf{KMP} & \Theta(m) & \Theta(n) \\
+& & \\
+\textbf{Bojer-Mur} & \Theta(m) & \Theta(n) \\
+& & \\
+\hline
+\end{array}
+\end{displaymath}
+\end{center}
+
+\begin{center}
+Tabela 1: Vreme preprocesiranja i upore\dj ivanja poznatijih algoritama
+\end{center}
+
+Slo\v zenost svakog algoritma jednaka je zbiru slo\v zenosti preprocesiranja i upore\dj ivanja. Iz tabele vidimo da je slo\v zenost naivnog algoritma u najgorem slu\v caju $\Theta((n-m+1)m)$ ba\v s kao i kod Rabin-Karp algoritma. Me\dj utim, ovaj drugi mnogo bolje radi u proseku i u praksi. Tako\dj e, postoji interesantan algoritam u obliku kona\v cnog automata \v cije vreme preprocesiranja zavisi od alfabeta ali zato za upore\dj ivanje tro\v si samo $\Theta(n)$ vremena. Ipak, najbolji pristup ima $KMP$ algoritam koji, poput kona\v cnog automata, za upore\dj ivanje tako\dj e tro\v si $\Theta(n)$ vremena ali redukuje vreme preprocesiranja na svega $\Theta(m)$ \v sto ga \v cini najefikasnijim algoritmom iz ove grupe i jednim od najboljih za ovu klasu problema. Bojer-Mur algoritam radi na sli\v cnom principu kao $KMP$, s tim \v sto posmatra uzorak sa desna na levo.
+
+\subsection{Notacija i terminologija}
+
+Koristi\' cemo oznaku $\bf \Sigma^\ast$ ("sigma zvezda") za ozna\v cavanje skupa svih stringova kona\v cne du\v zine sastavljene od karaktera alfabeta $\bf \Sigma$. Dakle, razmatramo samo stringove kona\v cne du\v zine. {\bf Prazan string}, du\v zine $0$, u oznaci $\varepsilon$, tako\dj e pripada $\bf \Sigma^\ast$. Du\v zinu stringa $x$ ozna\v cavamo sa $|x|$. Za $a \in {\bf \Sigma^\ast}$ uvodimo oznaku $a^n = \underbrace{aa\ldots a}_{n}$.
+
+\begin{dfn}
+
+String $y$ je {\bf prefiks} stringa $x$, u oznaci $y \sqsubset x$, ako postoji string $w \in {\bf \Sigma^\ast}$ tako da je $x = yw$. Analogno, string $y$ je {\bf sufiks} stringa $x$, u oznaci $y \sqsupset x$, ako postoji string $w \in {\bf \Sigma^\ast}$ tako da je $x = wy$.
+
+\end{dfn}
+
+Na primer {\bf ab} $\sqsubset$ {\bf abcca} i {\bf cca} $\sqsupset$ {\bf abcca}. Primetimo da ako je $y \sqsubset x$ ili $y \sqsupset x$ tada je $|y| \leq |x|$. Prazan string $\varepsilon$ je i prefiks i sufiks svakom stringu. Korisno je primetiti da je za proizvoljne stringove $x$ i $y$ i proizvoljni simbol $a$ va\v zi $x \sqsupset y$ akko $xa \sqsupset ya$. Nije te\v sko dokazati da su $\sqsubset$ i $\sqsupset$ tranzitivne relacije.
+
+Slede\' ca lema bi\' ce korisna kasnije.
+
+\begin{lm}[Lema o preklapaju\' cim sufiksima]
+
+Neka su $x$, $y$ i $z$ stringovi takvi da je $x \sqsupset z$ i $y \sqsupset z$. Ako je $|x| \leq |y|$ tada je $x \sqsupset y$. Ako je $|x| \geq |y|$ tada je $y \sqsupset x$. Ako je $|x| = |y|$ tada je $x = y$.
+
+\end{lm}
+\textit{Dokaz:} Jednostavno grafi\v cko predstavljanje stringova $x$, $y$ i $z$ je dovoljno da bi se uverili u korektnost leme. $\Box$
+\\
+
+Zbog sa\v zetosti notacije, u daljem tekstu \' cemo $k$-slovni prefiks $P[1..k]$ uzorka $P[1..m]$ ozna\v cavati sa $P_k$. Prema tome $P_0 = \varepsilon$ i $P_m = P = P[1..m]$. Analogno defini\v semo $k$-slovni prefiks teksta $T$ kao $T_k$. Koriste\' ci ovu notaciju mozemo problem upore\dj ivanja stringova preformulisati kao nala\v zenje svih pomeraja $s$, $0 \leq s \leq n - m$, takve da je $P \sqsupset T_{s+m}$.
+\\
+
+U pseudokodovima upore\dj ivanje stringova jednakih du\v zina uzeto je za primitivnu operaciju. Ako se stringovi upore\dj uju sa leva na desno (znak po znak) i upore\dj ivanje prestaje kada do\dj e do neslaganja, pretpostavljamo da je utro\v seno vreme za to upore\dj ivanje linearna funkcija od broja poklapaju\' cih znakova. Preciznije, pretpostavlja se da se za test "$x = y$" utro\v si $\Theta(t+1)$ vremena, gde je $t$ du\v zina najdu\v zeg stringa $z$ takvog da je $z \sqsubset x$ i $z \sqsubset y$. (Pi\v semo $\Theta(t+1)$ umesto $\Theta(t)$ da bi smo uklju\v cili grani\v cni slu\v caj $t = 0$. Prvi znakovi se ne poklapaju ali je potrebna pozitivna koli\v cina vremena za ovo upore\dj ivanje.)
+
+
+\section{Naivni algoritam}
+
+\subsection{Opis}
+
+Naivni algoritam nalazi sve korektne pomeraje koriste\' ci petlju koja proverava uslov $P[1..m] = T[s + 1 .. s + m]$ za svaku od $n - m + 1$ mogu\' cih vrednosti pomeraja $s$. Ukoliko do\dj e do poklapanja, pomeraj se \v stampa.
+\\
+
+\noindent {\bf Naive-String-Matcher($T$, $P$)} \\
+\texttt{
+\noindent 1 \quad $n$ $\leftarrow$ length[$T$] \\
+\noindent 2 \quad $m$ $\leftarrow$ length[$P$] \\
+\noindent 3 \quad {\bf for} $s$ $\leftarrow$ 0 {\bf to} $n - m$ \\
+\noindent 4 \quad \indent {\bf do if} $P$[1..$m$] = $T$[$s + 1$..$s + m$] \\
+\noindent 5 \quad \indent \indent {\bf then} print "uzorak se pojavljuje sa pomerajem" $s$
+}
+\\
+
+Ova procedura se mo\v ze interpretirati grafi\v cki kao da uzorak "klizi" ispod teksta, detektuju\' ci one pomeraje za koje je odgovaraju\' ci deo teksta iznad uzorka jednak samom uzorku. {\bf For} petlja u liniji 3 eksplicitno ispituje sve mogu\' ce pomeraje. Test u liniji 4 odre\dj uje da li je trenutni pomeraj validan ili ne; on obuhvata petlju za proveru poklapanja znaka na odgovaraju\' coj poziciji dok se sve pozicije ne poklope ili dok ne do\dj e do prvog neslaganja. Linija 5 \v stampa svaki korektan pomeraj.
+\\
+
+Slo\v zenost procedure NAIVE-STRING-MATCHER je o\v cigledno $O((n - m +1)m)$ i ova granica je dosti\v zna u najgorem slu\v caju. Na primer, uo\v cimo tekst $a^n$ i uzorak $a^m$. Za svaku od $n - m + 1$ mogu\' cih vrednosti pomeraja $s$, implicitna petlja za upore\dj ivanje iz linije 4 mora se izvr\v siti $m$ puta da bi potvrdila korektnost pomeraja. Prema tome, u najgorem slu\v caju je slo\v zenost $\Theta((n - m + 1)m)$, \v sto je za $m \approx \frac{n}{2}$ upravo $\Theta(n^2)$. Ukupna slo\v zenost naivnog algoritma jednaka je slo\v zenosti upore\dj ivanja jer preprocesiranja nema.
+\\
+
+Kao \v sto \' cemo videti, NAIVE-STRING-MATCHER nije optimalna procedura za ovu vrstu problema. Glavni nedostatak ovog algoritma je u tome \v sto se dobijene informacije o tekstu za jedan pomeraj $s$ u potpunosti ignori\v su prilikom razmatranje slede\' ceg pomeraja $s + 1$. Na primer, ako je $P = aaab$ i ustanovili smo da je $s = 0$ korektan pomeraj, tada nijedan od pomeraja 1, 2 ili 3 nisu korektni jer je $P[4] = b \neq a$, ali \' ce ih naivni algoritam svejedno ispitati. Ili ako je, na primer, $P = 00000001$ i $T = 00\ldots001$ (50 nula) tada \' ce broja\v c kod funkcije za upore\dj ivanje biti menjan (51 - 8 + 1)7 puta, tj. nigde se ne\' ce koristiti \v cinjenica da ako je pomeraj $s$ korektan, onda se prvih 7 znakova (nule) poklapaju i u pomeraju $s + 1$. U narednim poglavljivam razmotri\' cemo nekoliko na\v cina za efektivnu upotrebu takvih informacija.
+\\
+
+Istina, degenerisani stringovi iz primera su retki u obi\v cnim tekstovima ali je algoritam znatno sporiji ako se koristi na binarnim tekstovima, npr. prilikom obra\dj ivanja slika ili sistemskih aplikacija. Sa druge strane, mo\v ze se pokazati da je za {\bf slu\v cajno} izabrane $P$ i $T$ iz $\bf \Sigma^\ast$, pri \v cemu va\v zi $|\Sigma| = d \geq 2$, o\v cekivani (ukupni) broj upore\dj ivanja implicitne petlje iz linije 4 naivnog algoritma jednak
+$$(n - m + 1)\frac{1 - d^{-m}}{1 - d^{-1}} \leq 2(n - m + 1).$$
+
+Prema tome, za slu\v cajno izabrane stringove, naivni algoritam je prili\v cno efikasan.
+
+
+
+\section{Rabin-Karp}
+
+\subsection{Brojevi i stringovi}
+
+Rabin i Karp su predlo\v zili algoritam za tra\v zenje uzorka u tekstu koji se pokazuje kao veoma efikasan u praksi i generalizuje se za srodne probleme. Slo\v zenost preprocesiranja ovog algoritma je $\Theta(m)$, dok je ukupna slo\v zenost u najgorem slu\v caju $\Theta((n - m + 1)m)$.
+\\
+
+Bez umanjenja op\v stosti mo\v zemo pretpostaviti da je $|\Sigma| = d$ i da je $\Sigma = \{ 0, 1, \ldots, d - 1 \}$ (uvek mo\v zemo izvr\v siti takvo preslikavanje nad $\Sigma$). Dakle, pretpostavljamo da svaki znak iz $\Sigma$ predstavlja jednu cifru u sistemu sa osnovom $d$. Prema tome, string od $k$ uzastopnih znakova iz $\Sigma$ predstavlja $k$-cifreni broj iz sistema sa osnovom $d$ (npr. za $d = 10$, string "31415" posmatramo kao broj 31 415).
+\\
+
+Za dati uzorak $P[1..m]$, neka $p$ predstavlja njegovu vrednost u sistemu sa osnovom $d$ (sam broj $p$ \' cemo zapisivati kao decimalan broj, tj. u sistemu sa osnovom 10). Sli\v cno, za dati tekst $T[1..n]$ neka $t_s$ prestavlja vrednost stringa $T[s + 1..s + m]$ za $0 \leq s \leq n - m$. O\v cigledno, $t_s = p$ ako i samo ako je $T[s + 1..s + m] = P[1..m]$; sledi da je $s$ korektan pomeraj ako i samo ako je $t_s = p$. Ako bismo mogli da izra\v cunamo $p$ u slo\v zenosti $\Theta(m)$ i sve vrednosti $t_s$ u $\Theta(n - m + 1)$, tada bismo mogli da odredimo sve korektne pomeraje $s$ u slo\v zenosti $\Theta(m) + \Theta(n - m + 1) = \Theta(n)$ tako \v sto \' cemo upore\dj ivati $p$ sa svakim od $t_s$. (Za sada, zanemarimo \v cinjenicu da $p$ i $t_s$ mogu biti veoma veliki brojevi.)
+\\
+
+Mo\v zemo izra\v cunati $p$ u slo\v zenosti $\Theta(m)$ na slede\' ci na\v cin:
+
+\begin{equation}
+p = P[m] + d(P[m - 1] + d(P[m - 2] + \ldots + d(P[2] + dP[1])) \ldots )
+\end{equation}
+
+Potpuno analogno mo\v zemo izra\v cunati $t_0$, vrednost stringa $T[1..m]$, u slo\v zenosti $\Theta(m)$. Da bi se izra\v cunale ostale vrednosti $t_1, t_2, \ldots, t_{n - m}$ u slo\v zenosti $\Theta(n - m)$ dovoljno je primetiti da se $t_{s+1}$ mo\v ze izra\v cunati uz pomo\' c $t_s$ u konstantnom vremenu jer je
+
+\begin{equation}
+t_{s + 1} = d(t_s - d^{m - 1}T[s + 1]) + T[s + m + 1]
+\end{equation}
+
+Na primer, neka je $m = 5$, $d = 10$ (obi\v can dekadni sistem), $t_s = 31415$ i neka je slede\' ci broj $T[s + 5 + 1] = 2$. Dakle, potrebno je ukloniti nastariju cifru 3, i dodati na kraju cifru 2. $$ t_{s+1} = 10(t_s - 10^4T[s + 1]) + T[s + 5 + 1] = 10(31415 -10000 \cdot 3) + 2 = 14152. $$
+
+Oduzimanjem $d^{m - 1}T[s + 1]$ uklanjamo cifru najve\' ce te\v zine iz $t_s$, mno\v zenjem sa $d$ "pomeramo" broj ulevo za jednu poziciju i dodavanjem $T[s + m + 1]$ se odgovaraju\' ca cifra najmanje te\v zine dovodi na svoje mesto. Ako se konstanta $d^{m - 1}$ izra\v cuna na po\v cetku (mo\v ze u $O(\lg m)$ ali je dovoljno u $\Theta(m)$) tada svako izvr\v savanje jedna\v cine (2) koristi konstantan broj aritmeti\v ckih operacija. Prema tome, mo\v zemo izra\v cunati $p$ i $t_0$ u vremenu $\Theta(m)$ i $t_1, t_2, \ldots, t_{n - m}$ u vremenu $\Theta(n - m + 1)$, pa mo\v zemo na\' ci sva pojavljivanja uzorka $P$ u tekstu $T$ koriste\' ci $\Theta(m)$ vremena za preprocesiranje i $\Theta(n - m + 1)$ vremena za upore\dj ivanje.
+
+\subsection {Algoritam}
+
+O\v cigledno, glavni problem opisane procedure je u tome \v sto brojevi $p$ i $t_s$ mogu biti previ\v se veliki \v sto onemogu\' cava lak rad sa njima. Ako $P$ sadr\v zi $m$ znakova, tada je pretpostavka da svaka aritmeti\v cka operacija nad $p$ (koji ima $m$ "cifara" od kojih svaka mo\v ze biti vi\v secifren broj u decimalnom sistemu) tro\v si "konstantno vreme" potpuno nerazumna.
+
+Sre\' com, postoji lek za ovaj problem: izra\v cunati $p$ i $t_s$-ove po modulu nekog odgovaraju\' ceg modula $q$. Kako se i izra\v cunavanja $p$, $t_0$ i rekurentna jednakost (2) mogu raditi preko modula $q$, zaklju\v cujemo da mo\v zemo izra\v cunati $p$ po modulu $q$ u slo\v zenosti $\Theta(m)$ i sve $t_s$-ove po modulu $q$ u slo\v zenosti $\Theta(n - m + 1)$. Za moduo $q$ se obi\v cno bira prost broj tako da je veli\v cina $dq$ pribli\v zno jednaka veli\v cini kompjuterske re\v ci (opsega) koju koristimo za pam\' cenje brojeva (ali ne ve\' ca). To nam omogu\' cava da sve operacije izvr\v savamo sa sigurno\v s\' cu da ne\' ce do\' ci do prekora\v cenja i maksimalno koristimo odgovaraju\' ci opseg. Sada nam rekurentna jedna\v cina (2) postaje:
+
+\begin{equation}
+t_{s + 1} = (d(t_s - T[s + 1]h) + T[s + m + 1]) \phantom{a} mod \phantom{a} q
+\end{equation}
+
+gde je $h = d^{m - 1}$ $mod$ $q$.
+\\
+
+\begin{center}
+Slika 2: (a) Primer izra\v cunavanja $t_6$ za $d = 10$ i $q = 13$. Pretpostavljamo da je $P$ = 31415 (osen\v cen deo). (b) Korektno i slu\v cajno poklapanje. (c) Izra\v cunavanje $t_{s + 1}$ preko $t_s$.
+\end{center}
+
+Re\v senje sa modulom $q$ nije savr\v seno jer \v cinjenica $t_s \equiv p$ (mod $q$) ne implicira $t_s = p$. Sa druge strane, ako je $t_s \not\equiv p$ (mod $q$), definitivno znamo da je $t_s \neq p$, \v sto zna\v ci da je pomeraj $s$ nekorektan. Prema tome, mo\v zemo koristiti test $t_s \equiv p$ (mod $q$) za izbacivanje nekorektnih pomeraja $s$. Svaki pomeraj $s$ za koji va\v zi $t_s \equiv p$ (mod $q$) mora se dodatno proveriti da bi utvrdilo da li je zaista korektan ili je samo {\bf slu\v cajno poklapanje}. Provera se obavlja tako \v sto se eksplicitno proverava da li je $P[1..m] = T[s + 1..s + m]$.
+
+Za dovoljno veliko $q$, mo\v zemo se nadati da je pojavljivanje slu\v cajnih poklapanja dovoljno retko, \v sto bi zna\v cajno smanjilo vreme koje bi utro\v sili na dodatne provere.
+\\
+
+Slede\' ca procedura (pseudokod) prikazuje direktnu primenu prethodnih ideja. Ulazni podaci procedure su tekst $T$, uzorak $P$, veli\v cina alfabeta $d$ (podrazumeva se da je $\Sigma = \{ 0, 1, \ldots, d - 1 \}$) i prost broj $q$ koji koristimo kao moduo. Izostavljena je funkcija koja proizvoljni alfabet $\Sigma$ prevodi u
+$\{ 0, 1, \ldots, d - 1 \}$.
+\\
+
+\noindent {\bf Rabin-Karp-Matcher($T$, $P$, $d$, $q$)} \\
+\texttt{
+\noindent \phantom{1}1 $n$ $\leftarrow$ length[$T$] \\
+\noindent \phantom{1}2 $m$ $\leftarrow$ length[$P$] \\
+\noindent \phantom{1}3 $h$ $\leftarrow$ $d^{m - 1}$ mod $q$ \\
+\noindent \phantom{1}4 $p$ $\leftarrow$ 0 \\
+\razmak
+\noindent \phantom{1}5 $t_0$ $\leftarrow$ 0 \\
+\noindent \phantom{1}6 {\bf for} $i$ $\leftarrow$ 1 {\bf to} $m$ \qquad \qquad \qquad \quad // preprocesiranje \\
+\noindent \phantom{1}7 \indent {\bf do} $p$ $\leftarrow$ ($dp$ + $P$[$i$]) mod $q$ \\
+\razmak
+\noindent \phantom{1}8 \indent \indent $t_0$ $\leftarrow$ ($dt_0$ + $T$[$i$]) mod $q$ \\
+\noindent \phantom{1}9 {\bf for} $s$ $\leftarrow$ 0 {\bf to} $n - m$ \qquad \qquad \quad // upore\dj ivanje \\
+\noindent 10 \indent {\bf do if} $p$ = $t_s$ \\
+\noindent 11 \indent \indent \indent {\bf then if} $P$[1..$m$] = $T$[$s + 1$..$s + m$] \\
+\noindent 12 \indent \indent \indent \indent \indent \quad {\bf then} print "pomeraj $s$ je korektan" \\
+\noindent 13 \indent \indent $\,${\bf if} $s < n - m$ \\
+\noindent 14 \indent \indent \indent {\bf then} $t_{s + 1}$ $\leftarrow$ ($d$($t_s$ - $T$[$s + 1$]$h$) + $T$[$s + m + 1$]) mod $q$ \\
+}
+\\
+
+Sledi opis rada procedure RABIN-KARP-MATCHER. Svi simboli su interpretirani kao cifre u sistemu sa osnovom $d$. Indeksi za niz $t$ su stavljeni samo zbog jasno\' ce; o\v cigledno, procedura radi korektno i bez njih. Linija 3 pseudokoda inicijalizuje promenljivu $h$ vredno\v s\' cu najstarije cifre u $m$-cifrenom broju (u bazi $d$). Linije 4 - 8 ra\v cunaju $p$ i $t_0$, \v sto predstavlja vrednosti $P[1..m]$ mod $q$ i $T[1..m]$ mod $q$, respektivno.
+
+{\bf For} petlja iz linija 9 - 14 prolazi kroz sve mogu\' ce pomeraje $s$, pri \v cemu je bitno \v sto je u svakom trenutku $t_s = T[s + 1..s + m]$ mod $q$. Ako je $p = t_s$ u liniji 10 (poklapanje) onda u liniji 11 proveravamo da li je $P[1..m] = T[s + 1..s + m]$ da bi smo izbacili mogu\' cnost slu\v cajnog poklapanja. Svi korektni pomeraji se \v stampaju u liniji 12. Ako je $s < n - m$ zna\v ci da \' ce se {\bf for} petlja izvr\v siti bar jo\v s jednom i zbog toga je potrebno ra\v cunati vrednost za $t_{s + 1}$. U liniji 14 se obavlja izra\v cunavanje $t_{s + 1}$ mod $q$ pomo\' cu $t_{s}$ mod $q$ u konstantnom vremenu, direktno koriste\' ci jedna\v cinu (3).
+\\
+
+RABIN-KARP-MATCHER vr\v si preprocesiranje u slo\v zenosti $\Theta(m)$ (\v sto se lako vidi iz linija 1 - 8 pseudokoda), dok je slo\v zenost upore\dj ivanja $O((n - m + 1)m)$ (linije 9 -14). Slo\v zenost upore\dj ivanja je u najgorem slu\v caju $\Theta((n - m + 1)m)$ jer (poput naivnog algoritma iz poglavlja 4) Rabin-Karp algoritam eksplicitno potvr\dj uje svaki korektan pomeraj. Ako je $P = a^m$ i $T = a^n$, potvr\dj ivanje tro\v si ta\v cno $\Theta((n - m + 1)m)$ vremena jer je svaki od $n - m + 1$ pomeraja korektan.
+\\
+
+U mnogim aplikacijama o\v cekujemo svega nekoliko korektnih pomeraja. Tako\dj e, cesto je opravdano o\v cekivanje da je broj slu\v cajnih poklapanja reda $O(\frac{n}{q})$, jer je verovatno\' ca da \' ce proizvoljni $t_s$ biti jednak sa $p$ po modulu $q$ jednaka $\frac{1}{q}$. Ozna\v cimo broj korektnih pomeraja sa $k$. Po\v sto se glavna petlja za upore\dj ivanje (linija 9) izvr\v sava $O(n)$ puta i kako za svako prona\dj eno poklapanje tro\v simo $O(m)$ vremena, slo\v zenost upore\dj ivanja u  Rabin-Karp algoritmu postaje
+
+\begin{equation}
+O(n) + O(m(k + \frac{n}{q})).
+\end{equation}
+
+Prema tome, ako je o\v cekivani broj korektnih pomeraja mali ($O(1)$) i ako je izabrani prost broj $q$ ve\' ci od du\v zine uzorka ($q \geq m$) onda je slo\v zenost upore\dj ivanja Rabin-Karp algoritma svega $O(n + m)$ = $O(n)$, jer je $m \leq n$. Primetimo da pretpostavke koje su dovele do zna\v cajne redukcije slo\v zenosti nisu nerealne.
+
+
+\section{KMP algoritam}
+
+\subsection{Kori\v s\' cenje informacija}
+
+U ovom poglavlju je predstavljen linearni algoritam za pronala\v zenje uzorka u tesktu (pronala\v zenja podstringa u stringu). Algoritam su otkrili Knut, Moris i Prat i zbog toga se zove Knuth-Morris-Pratt algoritam ili jednostavno KMP. Ovaj algoritam ima zajedni\v ckih ta\v caka sa algoritmom na principu kona\v cnog automata, ali mnogo pametnije koristi informacije iz uzorka \v sto dovodi do zna\v cajne redukcije slo\v zenosti prilikom preprocesiranja u odnosu na pomenuti algoritam. Njegova slo\v zenost upore\dj ivanja je $\Theta(n)$ koriste\' ci samo pomo\' cnu funkiciju $\pi[1..m]$ izra\v cunatu iz uzorka u slo\v zenosti $\Theta(m)$.
+\\
+
+Kao \v sto je pomenuto u poglavlju o naivnom algoritmu, klju\v cna stvar prilikom upore\dj ivanja dva stringa je maksimalno kori\v s\' cenje informacija koje mo\v zemo dobiti iz uzorka $P$. Prefiksna funkcija $\pi$ uzorka $P$ koristi informacije kako se uzorak poklapa sa sobom, tj. da li se neki prefiksi stringa $P$ pojavljuju sa nekim pomerajima u stringu $P$ i koliki su ti pomeraji. Ova informacija se koristi kako bi se izbegla nepotrebna testiranja poput onih u naivnom algoritmu.
+\\
+
+Razmotrimo upore\dj ivanje uzorka $P$ = {\bf ababaca} sa tekstom $T$ prikazano na slici 3. U ovom primeru prikazana je provera jednog pomeraja $s$ i za taj pomeraj $q =5$ simbola uzorka $T$ su se poklopila sa tekstom, dok je kod 6. simbola do\v slo do neslaganja. Informacija da je do\v slo do poklapanja $q$ simbola automatski odre\dj uje odgovaraju\' ce simbole teksta $T$. Znaju\' ci tih $q$ simbola teksta $T$, odmah mo\v zemo utvrditi da su neki pomeraji nekorektni (bez ponovnog upore\dj ivanja). U primeru sa slike, pomeraj $s + 1$ je sigurno nekorektan jer bi se ina\v ce prvi simbol {\bf a} uzorka $P$ "poravnao" sa simbolom teksta za koji znamo da se poklapa sa drugim simbolom {\bf b} uzorka $P$ \v sto je nemogu\' ce ({\bf a} $\neq$ {\bf b}). Sa druge strane, pomeraj $s' = s + 2$ "poravnava" prva tri simbola uzorka sa tri simbola teksta za koje znamo da se sigurno poklapaju (tj. ta tri simbola ne moramo da proveravamo) na osnovu informacije o tom delu teksta.
+
+\begin{center}
+Slika 3: (a) Uzorak je poravnat sa tekstom tako da se $q = 5$ simbola poklapaju. (b) Koriste\' ci informacije koje posedujemo zaklju\v cujemo da je $s + 1$ nekorektan pomeraj, dok je pomeraj $s' = s + 2$ konzistentan sa svim \v sto znamo o tekstu. (c) Informacije za takve zaklju\v cke smo dobili upore\dj uju\' ci uzorak sa samim sobom.
+\end{center}
+
+Uop\v ste, vrlo je korisno znati odgovor na slede\' ce pitanje: Ako se simboli $P[1..q]$ uzorka poklapa sa simbolima $T[s + 1..s+q]$ teksta za neki pomeraj $s$, koji je najmanji pomeraj $s' > s$ za koji va\v zi
+\begin{equation}
+P[1..k] = T[s' + 1..s' + k]
+\end{equation}
+gde je $s' + k = s + q$?
+\\
+
+Takav pomeraj $s'$ je prvi pomeraj ve\' ci od $s$ za koji ne mo\v zemo sa sigruno\v s\' cu da tvrdima da je nekorektan na osnovu poznavanja dela teksta $T[s + 1..s + q]$, Tada su pomeraji $s+1, \ldots, s'-1$ sigurno nekorektni, jer bi u protivnom neki od njih zadovoljavao uslov (5) \v sto je nemogu\' ce jer je po definiciji $s'$ najmanji pomeraj ve\' ci od $s$ koji ga zadovoljava. U najboljem slu\v caju je $s' = s + q$ (tj. $k = 0$, svi simboli teksta $T[s + 1..s + q]$ su razli\v citi od $P[1]$) \v sto zna\v ci da su svi pomeraji $s + 1, \ldots, s + q - 1$ nekorektni (znamo bez ikakve provere). U svakom slu\v caju, za novi pomeraj $s'$ ne moramo da upore\dj ujemo prvih $k$ simbola uzorka $P$ sa odgovaraju\' cim simbolima teksta $T$, jer se oni sigurno poklapaju na osnovu jednakosti (5).
+
+\subsection{Prefiksna funkcija}
+
+Neophodne informacije za izra\v cunavanje pomeraja $s'$ mo\v zemo dobiti prilikom upore\dj ivanja uzorka sa samim sobom, kao na Slici 3 (c). \v Sta je nama potrebno da znamo? Po\v sto je $T[s' + 1..s' + k]$ deo teksta $T[s + 1..s + q]$ (ta\v cnije njegov sufiks, jer je $s' + k = s + q$) koji se poklapao sa $P[1..q]$, sledi da je $T[s' + 1..s' + k]$ sufiks stringa $P_q$. Na osnovu ovoga i uslova (5), da bi na\v sli tra\v zeni pomeraj $s'$ potrebno (i dovoljno) je na\' ci najve\' ce $k < q$ tako da je $P_k \sqsupset P_q$. Tada je $s' = s + (q - k)$.
+
+Za nala\v zenje takvog broja $k$ koristimo funkciju $\pi$:
+
+\begin{dfn}
+
+Za dati uzorak $P[1..m]$, {\bf prefiksna funkcija} uzorka $P$ je funkcija $\pi$ : $\{1, 2, \ldots, m\} \rightarrow \{0, 1, \ldots, m - 1\}$ za koju va\v zi $$\pi[q] = max\phantom{i}\{k \mid k < q \wedge P_k \sqsupset P_q\}.$$
+
+\end{dfn}
+
+Drugim re\v cima, $\pi[q]$ je du\v zina najdu\v zeg prefiksa uzorka $P$ (razli\v citog od $P_q$) koji je ujedno i sufiks stringa $P_q$. U Tabeli 2 date su vrednosti prefiksne funkcije $\pi$ za uzorak $P$ = {\bf ababababca}.
+
+\begin{center}
+\begin{displaymath}
+% use packages: array
+\begin{array}{|c|c|c|c|c|c|c|c|c|c|c|}
+\hline i & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 \\
+\hline P[i] & $a$ & $b$ & $a$ & $b$ & $a$ & $b$ & $a$ & $b$ & $c$ & $a$ \\
+\hline \pi[i] & 0 & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 0 & 1 \\
+\hline
+\end{array}
+\end{displaymath}
+\end{center}
+
+\begin{center}
+Tabela 2: Prefiksna funkcija $\pi$ za $P$ = ababababca.
+\end{center}
+
+Dokaza\' cemo dve teoreme koje poma\v zu da se niz $\pi$ efektivno izra\v cuna. Uvedimo prvo neke oznake. Neka je $$ \pi^\ast[q] = \{\pi[q], \pi^{(2)}[q], \ldots, \pi^{(t)}[q] \}, $$ gde se $\pi^{(i)}[q]$ defini\v se rekurzivno: $\pi^{(0)}[q] = q$ i $\pi^{(i+1)}[q] = \pi[\pi^{(i)}[q]]$, za svako $i \geq 1$. Podrazumeva se da se niz $\pi^\ast[q]$ zavr\v sava kada je $\pi^{(t)}[q] = 0$.
+
+\begin{thm}
+
+Neka je $P$ uzorak du\v zine $m$ i neka je $\pi$ njegova prefiksna funkcija. Tada za svako $q = 1, 2, \ldots, m$ va\v zi: $ \pi^\ast[q] = \{k \mid k < q \wedge P_k \sqsupset P_q\}$.
+
+\end{thm}
+\textit{Dokaz:} Primetimo da iz $i \in \pi^\ast[q]$ sledi $P_i \sqsupset P_q$. Zaista, ako $i \in \pi^\ast[q]$ sledi da postoji $n > 0$ tako da je $i = \pi^{(n)}[q]$. Koriste\' ci tranzitivnost relacije $\sqsupset$ (biti sufiks), indukcijom po $n$ lako dokazujemo tvr\dj enje.
+
+Pretpostavimo sada da postoji ceo broj $k$ tako da je $P_k \sqsupset P_q$ i da $k \not\in  \pi^\ast[q]$. Neka je $j$ najve\' ci od svih takvih brojeva i neka je $j'$ najmanji broj iz $\pi^\ast[q]$ koji je ve\' ci od $j$ (takav broj postoji jer $\pi[q] \in \pi^\ast[q]$ i $\pi[q] = max\phantom{i}\{k \mid k < q \wedge P_k \sqsupset P_q\}$ pa je sigurno $\pi[q] > j$). Na osnovu dokazanog prvog dela teorema, va\v zi $P_{j'} \sqsupset P_q$. Kako je i $P_j \sqsupset P_q$, na osnovu Leme 3.2 sledi $P_j \sqsupset P_{j'}$, jer je $j' > j$. Prema pretpostavci, $j$ je najve\' ca vrednost manja od $j'$ sa ovim svojstvom, pa sledi da je $\pi[j'] = j$. Ali kako $j' \in \pi^\ast[q]$ i $\pi[j'] = j$ sledi da i $j \in \pi^\ast[q]$, \v sto je kontradikcija.
+
+Ovim je dokaz kompletan. $\Box$
+\\
+
+Primetimo da Teorema 6.2 govori da se svi sufiksi stringa $P_q$, du\v zine manje od $q$ koji su prefiksi stringa $P$ (i samo oni) nalaze u skupu $\pi^\ast[q]$.
+
+\begin{thm}
+
+Neka je $P$ uzorak du\v zine $m$ i neka je $\pi$ njegova prefiksna funkcija. Tada, za svako $q = 1, 2, \ldots, m$ va\v zi: ako je $\pi[q] > 0$, tada $\pi[q] - 1 \in \pi^\ast[q - 1]$.
+
+\end{thm}
+\textit{Dokaz:} Ako je $r = \pi[q] > 0$ tada je $r < q$ i $P_r \sqsupset P_q$. Sledi da je $r - 1 < q - 1$ i $P_{r - 1} \sqsupset P_{q - 1}$ (odbacivanjem poslednjih simbola stringova $P_r$ i $P_q$). Prema tome, iz Teoreme 6.2, sledi da je $\pi[q] - 1 = r - 1 \in \pi^\ast[q - 1]$. $\Box$
+\\
+
+Ovo znatno poma\v ze prilikom izra\v cunavanja funkcije (niza) $\pi$. Pretpostavimo da smo izra\v cunali $\pi[i]$ za sve $i < q$. Na osnovu Teoreme 6.3 va\v zi $\pi[q] - 1 \in \pi^\ast[q - 1]$, odakle sledi da je $\pi[q]$ maksimum skupa $\{k + 1 \mid k \in \pi^\ast[q - 1] \wedge P_{k + 1} \sqsupset P_q \}$ koji je ekvivalentan sa skupom $\{k + 1 \mid k \in \pi^\ast[q - 1] \wedge P_k \sqsupset P_{q - 1} \wedge P[k + 1] = P[q] \}$ koji je ekvivalentan sa skupom $\{k + 1 \mid k \in \pi^\ast[q - 1] \wedge P[k + 1] = P[q] \}$ jer je prema Teoremi 6.2 $\{k \mid k < q - 1 \wedge  P_k \sqsupset P_{q-1} \} = \pi^\ast[q - 1]$. Prema tome, da bi izra\v cunali $\pi[q]$ dovoljno je posmatrati samo brojeve iz skupa $\pi^\ast[q - 1]$ i proveriti jednostavan uslov ($P[k + 1] = P[q]$). Pokaza\' cemo da je slo\v zenost ovoga linearna po $m$.
+
+\subsection{Algoritam}
+
+Slede\' ci pseudokod prikazuje na\v cin upore\dj ivanja KMP algoritma kori\v s\' cenjem prefiksne funkcije, kao i efektivan na\v cin izra\v cunavanja iste.
+\\
+
+\noindent {\bf KMP-Matcher($T$, $P$)} \\
+\texttt{
+\noindent \phantom{1}1 $n$ $\leftarrow$ length[$T$] \\
+\noindent \phantom{1}2 $m$ $\leftarrow$ length[$P$] \\
+\razmak
+\noindent \phantom{1}3 $\pi$ $\leftarrow$ {\bf Compute-Prefix-Function($P$)} \\
+\noindent \phantom{1}4 $q$ $\leftarrow$ 0 \\
+\noindent \phantom{1}5 {\bf for} $i$ $\leftarrow$ 1 {\bf to} $n$\\
+\noindent \phantom{1}6 \indent {\bf do while} $q > 0$ {\bf and} $P$[$q + 1$] $\neq$ $T$[$i$] \\
+\noindent \phantom{1}7 \indent \indent \indent \quad {\bf do} $q$ $\leftarrow$ $\pi$[$q$] \\
+\noindent \phantom{1}8 \indent \indent {\bf if} $P$[$q + 1$] = $T$[$i$] \\
+\noindent \phantom{1}9 \indent \indent \indent {\bf then} $q$ $\leftarrow$ $q + 1$ \\
+\noindent 10 \indent \indent {\bf if} $q$ = $m$ \\
+\noindent 11 \indent \indent \indent {\bf then} print "Uzorak se pojavljuje sa pomerajem" $i - m$ \\
+\noindent 12 \indent \indent \indent \indent \indent $q$ $\leftarrow$ $\pi$[$q$] \\ }
+
+\noindent {\bf Compute-Prefix-Function($P$)} \\
+\texttt{
+\noindent \phantom{1}1 $m$ $\leftarrow$ length[$P$] \\
+\noindent \phantom{1}2 $\pi$[1] $\leftarrow$ 0 \\
+\noindent \phantom{1}3 $k$ $\leftarrow$ 0 \\
+\noindent \phantom{1}4 {\bf for} $q$ $\leftarrow$ 2 {\bf to} $m$ \\
+\noindent \phantom{1}5 \indent {\bf do while} $k > 0$ {\bf and} $P$[$k + 1$] $\neq$ $P$[$q$] \\
+\noindent \phantom{1}6 \indent \indent \indent \indent {\bf do} $k$ $\leftarrow$ $\pi$[$k$] \\
+\noindent \phantom{1}7 \indent \indent {\bf if} $P$[$k + 1$] = $P$[$q$]\\
+\noindent \phantom{1}8 \indent \indent \indent {\bf then} $k$ $\leftarrow$ $k + 1$ \\
+\noindent \phantom{1}9 \indent \indent $\pi$[$q$] $\leftarrow$ $k$ \\
+\noindent 10 {\bf return} $\pi$
+}
+\\
+
+KMP-MATCHER radi tako \v sto procesira tekst s leva na desno pri \v cemu u svakom trenutku u promenljivoj $q$ pamti broj poklopljenih simbola. Preciznije, kada se glavna petlja iz linije 5 izvr\v si $i - 1$ puta, znamo da je $P_q = T[i - q..i - 1]$ i da ne postoji ve\' ci broj $q$ sa ovim svojstvom. Ukoliko je $P[q + 1] \neq T[i]$ linije 6 - 7 tra\v ze najmanji pomeraj $s'$ za koji znamo da nije nekorektan, uz pomo\' c izra\v cunate prefiksne funkcije $\pi$. Trenutni pomeraj je $s = i - q$ a slede\' ci pomeraj $s'$ \' ce biti $i - q + (q - \pi[q]) = i - \pi[q]$ pa zatim $i - \pi[\pi[q]]$ itd. sve dok ne do\dj e do poklapanja $P[q + 1]$ sa $T[i]$ ili dok $q$ ne postane 0. Ako postane $P[q + 1] = T[i]$, pove\' cavamo du\v zinu prefiksa uzorka $P$ koji se poklapa sa nekim delom teksta (linije 8 - 9). Ukoliko do\dj e do poklapanja, \v stampa se odgovaraju\' ci pomeraj i postavlja se vrednost promenljive $q$ na $\pi[q]$ jer je to slede\' ci validan pomeraj i nema smisla proveravati jednakost za $P[m + 1]$ jer taj simbol ne postoji.
+\\
+
+COMPUTE-PREFIX-FUNCTION izra\v cunava $\pi$ direktno koriste\' ci Teoreme 6.2 i 6.3. O\v cigledno je $\pi[1] = 0$ jer je, pre svega, $\pi[q] < q$. Prilikom svakog ulaska u {\bf for} petlju iz linije 4, u promenljivoj $k$ se nalazi vrednost $\pi[q - 1]$. Kako je pokazano da je $\pi[q] - 1 \in \pi^\ast[q - 1]$, dovoljno je ispitivati samo te vrednosti. Linije 5 - 6 omogu\' cavaju prolaz kroz skup $\pi^\ast[q - 1]$ i to od njegovih najve\' cih elemenata ka najmanjim ($k > \pi[k] > \pi[\pi[k]] > \ldots$) pa \' ce u trenutku poklapanja (linija 7) $\pi[q]$ dobiti najve\' cu odgovaraju\' cu vrednost iz skupa $\pi^\ast[q - 1]$.
+\\
+
+Iako se iz koda ne mo\v ze lako primetiti, i slo\v zenost preprocesiranja i slo\v zenost upore\dj ivanja je linearna.
+
+Posmatrajmo kod za preprocesiranje. {\bf While} petlja iz linija 5 - 6 mo\v ze da se izvr\v si $O(k)$ puta, za fiksirano $k$ i u tim linijama se $k$ smanjuje jer je $k > \pi[k]$ ali je uvek $k \geq 0$. Sa druge strane, $k$ se pove\' cava jedino u liniji 8 i to samo za 1, pa prema tome $k \leq m$ za sve vreme izvr\v savanja funkcije jer imamo $m$ prolaza kroz petlju. Ako se {\bf while} petlja iz linija 5 - 6 izvr\v sila $X$ puta, to zna\v ci da \' ce na kraju programa biti $k \leq m - X$ jer je na po\v cetku $k = 0$, u toku programa linija 8 ne mo\v ze se izvr\v siti vi\v se od $m$ puta i svaki put kada se {\bf while} petlja izvr\v si $k$ se smanji za bar 1. Kako je uvek $k \geq 0$, sledi $m - X \geq 0$ odakle zaklju\v cujemo da je $X \leq m$, odakle je $X = O(m)$. Osim {\bf while} petlje, ostatak programa radi u slo\v zenosti $\Theta(m)$ pa je ukupna slo\v zenost preprocesiranja $O(m) + \Theta(m) = \Theta(m)$.
+
+Zbog velike sli\v cnosti procedura za upore\dj ivanje i preprocesiranje, dokaz da KMP-MATCHER radi u slo\v zenosti $\Theta(n)$ je analogan, samo \v sto se umesto $k$ posmatra $q$.
+\\
+
+Prema tome, slo\v zenost preprocesiranja KMP algoritma je $\Theta(m)$ dok je slo\v zenost upore\dj ivanja $\Theta(n)$. Primetimo da za razliku od naivnog i Rabin-Karp algoritma, ovde ne postoji najgori slu\v caj, \v cak i za stringove oblika $a^n$ KMP algoritam radi stabilno. Tako\dj e primetimo da azbuka $\Sigma$ uop\v ste ne uti\v ce na rad algoritma, kao ni \v cinjenica da li je to kona\v cna ili beskona\v cna azbuka, \v sto KMP algoritam \v cini univerzalnim.
+
+\section{Zaklju\v cak}
+
+Kao \v sto je re\v ceno, efikasnos algoritama igra veliku ulogu u procesiranju teksta. Kori\v s\' cenje druga\v cijih algoritama mo\v z ubrzati pretragu vi\v se puta, \v sto je vrlo zna\v cajno za velike dokumente kada se trajanje pretrage meri desetinama sekundi ili minutima.
+\\
+
+U radu su opisana 3 algoritma sa razli\v citim pristupom tra\v zenja uzorka u tekstu. Koji od njih primeniti - zavisi od same prirode problema. Generalno, KMP je najbolje re\v senje za ovu klasu problema, ali nije trivijalan za razumevanje. Videli smo, me\dj utim, da za slucajno izabrane uzorke, i slo\v zenost Rabin-Karp i naivnog algoritma postaje linearna. Tako\dj e, za mali alfabet (npr. binarni nizovi) ve\' ca je verovatno\' ca da se pojavi najgori slu\c aj kod ova dva algoritma. Jo\v s jedan faktor koji treba uzeti u razmatranje je du\v zina uzorka. \v Cesto je potrebno na\' ci samo jednu re\v c u tekstu, pa u tim slu\v ajevima mo\v zemo pretpostaviti da je du\v zina uzorak konstanta i tada \' ce i naivni algoritam raditi u linearnom vremenu.
+
+\addcontentsline{toc}{section}{Literatura}
+\begin{thebibliography}{10}
+\bibitem{} Kisa\v canin B, \textit{Mala matematika},
+Novi Sad, Univerzitet u Novom Sadu \& Stylos, 1995
+\bibitem{} T.H. Cormen, C.E. Leiserson, R.L. Rivest, C. Stein, \textit{Introduction to Algorithms}, Second Edition,
+The MIT Press, 2001.
+\bibitem{} Sedgewick R, \textit{Algorithms}, Addison-Wesley, 1984.
+\bibitem{} \v Zivkovi\' c M, \textit{Algoritmi}, Matemati\v cki fakultet, Beograd, 2000
+
+\end{thebibliography}
+
+\end{document} 

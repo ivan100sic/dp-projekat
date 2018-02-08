@@ -1,0 +1,24 @@
+\subsection{Inverzija re\v senja i stanja}
+
+Ova tehnika se mo\v ze primeniti kada $d_i$ uzima vrednosti iz nekog "malog" skupa i sastoji se iz toga da za svaku mogu\' cu vrednost $x = d_i$ direktno nalazimo skup vrednosti $i$ za koje je $d_i = x$. Posmatrajmo slede\' ci problem:
+\\
+
+Imamo $n$ dukata od kojih je ta\v cno jedan falsifikat. Mi mo\v zemo da u zlataru odnesemo bilo koji skup dukata, i da dobijemo odgovor da li taj skup dukata sadr\v zi falsifikat. Ukoliko sadr\v zi, moramo za ovu uslugu da platimo $a$ dinara a ukoliko ne sadr\v zi, pla\' camo $b$ dinara. Va\v zi $0 < a,b \leq 100$. Ako je na\v s cilj da minimizujemo pla\' cenu sumu u dinarima u najgorem mogu\' cem slu\v caju, koliki je taj iznos?
+\\
+
+Neka je $d_i$ optimalan broj dinara koje pla\' camo, ukoliko treba da utvrdimo koji je falsifikovani dukat u skupu od $i$ dukata. U prvom potezu mo\v zemo odabrati nekih $j, 1 < j < i$ i odneti ih u zlataru. U zavisnosti od odgovora, dolazimo do stanja gde imamo $j$ dukata od kojih je jedan falsifikat a platili smo $a$ dinara, ili $i-j$ dukata od kojih je jedan falsifikat a platili smo $b$ dinara. Treba o\v cekivati gori ishod, tako da va\v zi slede\' ca DP veza:
+
+\begin{equation} \label{eq:dukati}
+	d_i = \min_{1 < j < i} \{ \max\{ a + d_j, b + d_{i-j} \} \}
+\end{equation}
+
+Glavni problem je ra\v cunanje vrednosti $d_n$ a trivijalni potproblem je $i = 1$ gde va\v zi $d_1 = 0$. Ovaj problem se mo\v ze re\v siti u vremenskoj slo\v zenosti $O(n^2)$ direktnom implementacijom, ili u $O(n \log n)$ ako primetimo da je niz $d_i$ rastu\' ci pa zato tra\v zimo optimalnu vrednost $j$ za svako $i$ binarnom pretragom. Me\dj utim, ako je vrednost $n$ veoma velika, npr. $n \geq 10^{12}$, moramo promeniti pristup.
+\\
+
+Mo\v zemo za svako $x \geq 0$ ra\v cunati maksimalno $i$ takvo da je $d_i = x$. Ozna\v cimo ovaj broj $i$ sa $f_x$. Jasno je da \' ce $f_x$ biti definisano samo ukoliko je $x \in \{ aj+bk | j,k \in \mathbb{N}_0 \}$, jer u svakom potezu pla\' camo ili $a$ ili $b$ dinara. Za $x=0$ je $f_x = 1$. Za $x > 0$ va\v zi:
+\begin{itemize}
+\item Ako ni $f_{x-a}$ ni $f_{x-b}$ nisu definisani, onda nije definisano ni $f_x$.
+\item Ako je definisano samo $f_{x-a}$, onda je $f_x = f_{x-a}$
+\item Ako je definisano samo $f_{x-b}$, onda je $f_x = f_{x-b}$
+\item Ako su definisana oba, onda je $f_x = f_{x-a} + f_{x-b}$.
+\end{itemize}
