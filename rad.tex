@@ -9,6 +9,7 @@
 \usepackage{amssymb}
 \usepackage{amsmath}
 \usepackage{float}
+\usepackage{hyperref}
 
 \newcommand{\razmak}{\vspace{0.2cm}}
 
@@ -418,9 +419,20 @@ Ciljno stanje je ono gde je $i=n, j=1, l=k$. Ra\v cunamo $d_{i,j,l}$ u rastu\' c
 
 Kako $i$ uzima vrednosti iz skupa $\{ 0, \ldots, n \}$, $j$ iz skupa $\{0, \ldots, \floor{\frac{n}{2}} \}$, a $l$ iz skupa $\{ -2nA, \ldots, 2nA \}$, ima ukupno $O(n^3 A)$ stanja, svako stanje ra\v cunamo u $O(1)$ pa je kona\v cna vremenska slo\v zenost ovog algoritma $O(n^3 A)$.
 
-\section{Zadaci za samostalni rad}
+\section{Zadaci za samostalan rad}
 
-Neki lep zadatak sa takmi\v cenja. Mo\v ze i zadaci iz zbirke.
+\begin{enumerate}
+\item \textbf{\href{http://codeforces.com/problemset/problem/838/E}{[Codeforces 838E]}} Dat je strogo konveksan mnogougao sa $n$ ta\v caka. Na\' ci du\v zinu najdu\v ze izlomljene linije bez samopresecanja \v cija su temena ujedno i temena datog mnogougla. Tra\v zi se re\v senje vremenske slo\v zenosti $O(n^2)$.
+
+\item \textbf{\href{http://codeforces.com/problemset/problem/809/D}{[Codeforces 809D]}} Dat je niz segmenata $[l_i, r_i], 1 \leq i \leq n$, $l_i, r_i \in \mathbb{Z}$. Na\' ci najve\' ci broj $k$ tako da postoje indeksi $1 \leq x_1 < x_2 \ldots < x_k \leq n$ i celi brojevi $y_1 < y_2 < \ldots < y_k$ takvi da je $l_{x_i} \leq y_i \leq r_{x_i}$ za svako $i \in \{1, \ldots, k \}$. Tra\v zi se re\v senje vremenske slo\v zenosti $O(n \log n)$.
+
+\item \textbf{\href{http://codeforces.com/problemset/problem/868/F}{[Codeforces 868F]}} Dat je niz celih brojeva $a_1, \ldots, a_n$ i prirodan broj $k \leq n$. Cena jednog podsegmenta je broj neure\dj enih parova razli\v citih indeksa unutar tog podsegmenta takvih da se na tim pozicijama nalaze jednaki brojevi. Podeliti niz na ta\v cno $k$ podsegmenata tako da je minimizovan zbir cena svih podsegmenata. Tra\v zi se re\v senje vremenske slo\v zenosti $O(n(k + \log n))$.
+
+\item \textbf{\href{http://ceoi.inf.elte.hu/probarch/09/harbingers.pdf}{[CEOI 2009, Harbingers]}} Dato je stablo sa \v cvorovima $\{1, \ldots, n\}$ i korenom u \v cvoru $1$. Data je i du\v zina svake grane (pozitivan broj). U svakom \v cvoru, osim u korenu, nalazi se kurir. Za svakog kurira poznata je njegova brzina i vreme koje mu je potrebno da krene od kad primi poruku. Kuriri mogu da se kre\' cu samo ka korenu stabla. Za svaki od gradova $\{2, \ldots, n\}$ na\' ci najmanje vreme potrebno da poruka stigne do korena. Tra\v zi se re\v senje vremenske slo\v zenosti $O(n \log n)$.
+
+\item \textbf{\href{http://bubblecup.petlja.org/Content/Media/Booklet2016.pdf}{[Bubble Cup 2016 Finals, H]}} Dva igra\v ca igraju igru Nim sa $n$ gomila. Veli\v cine ovih gomila su nezavisne slu\v cajne promenljive, \v cija je raspodela verovatno\' ca data nizom $p_1, \ldots, p_m$ (sve imaju istu raspodelu), verovatno\' ca da neka gomila ima veli\v cinu $i$ je $p_i$. Na\' ci verovatno\' cu da prvi igra\v c ima pobedni\v cku strategiju. Tra\v zi se re\v senje vremenske slo\v zenosti $O(x^2 \log n)$.
+
+\end{enumerate}
 
 \section{Zaklju\v cak}
 
